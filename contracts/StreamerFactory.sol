@@ -10,6 +10,7 @@ import { Streamer } from "./Streamer.sol";
 
 /** @title Streamer Factory
  * @author WOOF! Software
+ * @custom:security-contact dmitriy@woof.software
  * @notice A Factory smart contract used for a safe deployment of new Streamer instances.
  * Anyone can use this Smart contract to deploy new streamers.
  */
