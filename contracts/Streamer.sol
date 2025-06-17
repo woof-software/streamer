@@ -152,7 +152,7 @@ contract Streamer is IStreamer {
         if (state != StreamState.NOT_INITIALIZED) revert AlreadyInitialized();
         startTimestamp = block.timestamp;
         lastClaimTimestamp = block.timestamp;
-        state = StreamState.SHORTENED;
+        state = StreamState.STARTED;
 
         uint256 balance = streamingAsset.balanceOf(address(this));
         if (calculateNativeAssetAmount(balance) < nativeAssetStreamingAmount)
