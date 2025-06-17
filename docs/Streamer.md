@@ -29,6 +29,14 @@ uint256 MIN_DURATION
 
 Minimal required duration for all duration parameters.
 
+### SCALE_FACTOR
+
+```solidity
+uint256 SCALE_FACTOR
+```
+
+Scale factor for price calculations.
+
 ### MIN_DECIMALS
 
 ```solidity
@@ -36,6 +44,14 @@ uint8 MIN_DECIMALS
 ```
 
 Minimal number of decimals allowed for tokens and price feeds.
+
+### SCALE_DECIMALS
+
+```solidity
+uint8 SCALE_DECIMALS
+```
+
+Number of decimals used to scale prices.
 
 ### streamingAsset
 
@@ -99,7 +115,7 @@ Amount of asset to be distributed. Specified in the Native asset units.
 uint256 slippage
 ```
 
-A flat percentage added to the price of the Streaming asset during calculation.
+A percentage used to reduce the the price of streaming asset to account for price fluctuations.
 
 ### claimCooldown
 
@@ -205,14 +221,6 @@ uint256 streamingAssetClaimedAmount
 
 Total amount of claimed Streaming asset.
 
-### state
-
-```solidity
-enum StreamState state
-```
-
-The state which indicated if the stream is not initialized, ongoing or terminated.
-
 ### onlyStreamCreator
 
 ```solidity
@@ -226,6 +234,7 @@ constructor(contract IERC20 _streamingAsset, contract AggregatorV3Interface _str
 ```
 
 _Decimals for tokens and price feeds should be between 6 and 18 to ensure proper calculations.
+Streaming asset should not be a token with multiple addresses to ensure the correct flow of the stream.
 USD value of `_nativeAssetStreamingAmount` must be equal to at least $1._
 
 ### initialize
@@ -356,6 +365,32 @@ Used in `claim` to calculate how much the remaining balance of Streaming asset i
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | Amount of Native asset. |
+
+### getStreamEnd
+
+```solidity
+function getStreamEnd() public view returns (uint256)
+```
+
+_Returns a correct of the stream once the stream is initialized._
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | Timestamp representing the end of the stream. |
+
+### getStreamState
+
+```solidity
+function getStreamState() external view returns (enum StreamState)
+```
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | enum StreamState | Current state of the stream. |
 
 ### scaleAmount
 

@@ -21,7 +21,8 @@ function deployStreamer(address _streamingAsset, address _nativeAsset, contract 
 
 Deploys a new Streamer instance.
 
-_For details of each parameter, check documentation for Streamer._
+_For details of each parameter, check documentation for Streamer.
+Do not send tokens to Streamer address precomputed before actual deployment. Use the address returned from the function._
 
 #### Return Values
 

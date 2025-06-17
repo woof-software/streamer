@@ -5,8 +5,9 @@
 ```solidity
 enum StreamState {
   NOT_INITIALIZED,
-  ONGOING,
-  TERMINATED
+  STARTED,
+  SHORTENED,
+  FINISHED
 }
 ```
 
@@ -40,6 +41,12 @@ event Swept(uint256 amount)
 
 ```solidity
 event Rescued(address token, uint256 balance)
+```
+
+### InsufficientAssetBalance
+
+```solidity
+event InsufficientAssetBalance(uint256 balanceRequired, uint256 balance)
 ```
 
 ### ZeroAmount
@@ -172,6 +179,18 @@ function claim() external
 
 ```solidity
 function sweepRemaining() external
+```
+
+### terminateStream
+
+```solidity
+function terminateStream(uint256 _terminationTimestamp) external
+```
+
+### rescueToken
+
+```solidity
+function rescueToken(contract IERC20 token) external
 ```
 
 ### getNativeAssetAmountOwed
