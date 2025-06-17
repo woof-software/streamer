@@ -24,7 +24,7 @@ Read more on [Compound Forum](https://www.comp.xyz/t/compound-streamer-universal
 
 | Network | Contract Name            | Address                                    | Link                                                                            |
 | ------- | ------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------- |
-| Mainnet | StreamerFactory Contract | 0xE68967350f07f8438345cF275e91cE64D0F450d2 | [Link](https://etherscan.io/address/0xE68967350f07f8438345cF275e91cE64D0F450d2) |
+| Mainnet | StreamerFactory Contract | 0x50EF9A4E151C4539453A91FA1ab7e1cF4dc8BDDe | [Link](https://etherscan.io/address/0x50EF9A4E151C4539453A91FA1ab7e1cF4dc8BDDe) |
 | Mainnet | Constant Price Feed      | 0xD72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB | [Link](https://etherscan.io/address/0xD72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB) |
 
 Use [Chainlink](https://docs.chain.link/data-feeds/price-feeds/addresses?network=ethereum&page=1&testnetPage=1) or any other price provider to find proper price feeds.
