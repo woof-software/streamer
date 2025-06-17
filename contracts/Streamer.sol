@@ -254,6 +254,8 @@ contract Streamer is IStreamer {
             return 0;
         }
         uint256 streamEnd = getStreamEnd();
+        // Validate if stream is properly initialized
+        if (streamEnd == 0) return 0;
         uint256 totalOwed;
 
         if (block.timestamp < streamEnd) {
