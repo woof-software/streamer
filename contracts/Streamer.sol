@@ -44,7 +44,7 @@ contract Streamer is IStreamer {
     address public immutable recipient;
     /// @notice Amount of asset to be distributed. Specified in the Native asset units.
     uint256 public immutable nativeAssetStreamingAmount;
-    /// @notice A flat percentage added to the price of the Streaming asset during calculation.
+    /// @notice A percentage used to reduce the the price of streaming asset to account for price fluctuations.
     uint256 public immutable slippage;
     /// @notice A period of time since last claim timestamp after which anyone can call claim.
     uint256 public immutable claimCooldown;
