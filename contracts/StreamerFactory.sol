@@ -20,6 +20,7 @@ contract StreamerFactory is IStreamerFactory {
 
     /// @notice Deploys a new Streamer instance.
     /// @dev For details of each parameter, check documentation for Streamer.
+    /// @dev Do not send tokens to Streamer address precomputed before actual deployment. Use the address returned from the function.
     /// @return The address of a new Streamer instance.
     function deployStreamer(
         address _streamingAsset,

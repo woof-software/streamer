@@ -121,6 +121,9 @@ The deployment is performed via `deployStreamer` function of StreamerFactory. Ma
 
 > **Slippage tip** Set up slippage based on price feed deviation and DEX slippage. In case the COMP/USD price feed deviation is 0.5% and the DEX slippage is 0.5%, it is better to set up a 1% slippage to avoid losing USD value altogether.
 
+**⚠️ Warning**
+Never send tokens to the address of the streamer, precomputed before the actual deployment. Use only the address returned by the function `deployStreamer` or from the event `StreamerDeployed`. Due to the usage of common counter for salt generation, precomputed and actual addresses might differ.
+
 ### Initialization
 
 In order to start the stream, the function `initialize` must be called by Stream Creator.
