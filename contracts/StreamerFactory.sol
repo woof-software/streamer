@@ -54,12 +54,9 @@ contract StreamerFactory is IStreamerFactory {
             _streamDuration,
             _minimumNoticePeriod
         );
-        bytes32 uniqueSalt = keccak256(abi.encode(msg.sender, counter++, constructorParams));
+        bytes32 uniqueSalt = keccak256(abi.encode(msg.sender, counter++));
         bytes memory bytecodeWithParams = abi.encodePacked(type(Streamer).creationCode, constructorParams);
-        address newContract = Create2.computeAddress(uniqueSalt, keccak256(bytecodeWithParams));
-
-        if (newContract.code.length != 0) revert ContractIsAlreadyDeployedException(newContract);
-        Create2.deploy(0, uniqueSalt, bytecodeWithParams);
+        address newContract = Create2.deploy(0, uniqueSalt, bytecodeWithParams);
 
         emit StreamerDeployed(newContract, constructorParams);
         return newContract;
