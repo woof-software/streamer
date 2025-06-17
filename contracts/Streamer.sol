@@ -81,6 +81,7 @@ contract Streamer is IStreamer {
     }
 
     /// @dev Decimals for tokens and price feeds should be between 6 and 18 to ensure proper calculations.
+    /// @dev
     /// USD value of `_nativeAssetStreamingAmount` must be equal to at least $1.
     constructor(
         IERC20 _streamingAsset,

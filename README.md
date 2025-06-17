@@ -24,7 +24,7 @@ Read more on [Compound Forum](https://www.comp.xyz/t/compound-streamer-universal
 
 | Network | Contract Name            | Address                                    | Link                                                                            |
 | ------- | ------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------- |
-| Mainnet | StreamerFactory Contract | 0xE68967350f07f8438345cF275e91cE64D0F450d2 | [Link](https://etherscan.io/address/0xE68967350f07f8438345cF275e91cE64D0F450d2)  |
+| Mainnet | StreamerFactory Contract | 0xE68967350f07f8438345cF275e91cE64D0F450d2 | [Link](https://etherscan.io/address/0xE68967350f07f8438345cF275e91cE64D0F450d2) |
 | Mainnet | Constant Price Feed      | 0xD72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB | [Link](https://etherscan.io/address/0xD72ac1bCE9177CFe7aEb5d0516a38c88a64cE0AB) |
 
 Use [Chainlink](https://docs.chain.link/data-feeds/price-feeds/addresses?network=ethereum&page=1&testnetPage=1) or any other price provider to find proper price feeds.
@@ -109,7 +109,7 @@ A total of 2,739 USDC worth of WETH will be distributed daily. WETH amount will 
 
 The deployment is performed via `deployStreamer` function of StreamerFactory. Make sure to prepare all the necessary parameters which include:
 
-- `_streamingAsset` and `_nativeAsset`. Make sure that these are valid ERC-20 tokens.
+- `_streamingAsset` and `_nativeAsset`. Make sure that these are valid ERC-20 tokens. Do not use tokens with multiple addresses as `_streamingAsset`.
 - `_streamingAssetOracle` and `_nativeAssetOracle`. Streamer is designed to work with the Chainlink Price Feeds which return price in USD, however, Streamer can work with any oracles which support AggregatorV3Interface and return the price in USD.
 - `_returnAddress`, `_recipient`, `_streamCreator`. Ensure that these are valid addresses which are entitled to receive ERC-20 tokens. `_recipient` should be able to call the function `claim()` of the Streamer. `_streamCreator` should be able to call functions `initialize()`, `sweepRemaining()`, `rescueToken()`, `terminateStream()`.
 - `_nativeAssetStreamingAmount`. An amount of Native asset to be streamed. This value should have number of decimals equal to the number of decimals in Native Asset.
