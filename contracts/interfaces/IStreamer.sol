@@ -13,6 +13,7 @@ interface IStreamer {
     event Terminated(uint256 terminationTimestamp);
     event Swept(uint256 amount);
     event Rescued(address token, uint256 balance);
+    event InsufficientAssetBalance(uint256 balanceRequired, uint256 balance);
 
     error ZeroAmount();
     error NotReceiver();

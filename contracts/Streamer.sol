@@ -178,6 +178,7 @@ contract Streamer is IStreamer {
 
         uint256 balance = streamingAsset.balanceOf(address(this));
         if (balance < streamingAssetAmount) {
+            emit InsufficientAssetBalance(streamingAssetAmount, balance);
             streamingAssetAmount = balance;
             owed = calculateNativeAssetAmount(balance);
         }
