@@ -1,6 +1,5 @@
 [
     "error AssetsMatch()",
-    "error ContractIsAlreadyDeployedException(address newContract)",
     "error Create2EmptyBytecode()",
     "error FailedDeployment()",
     "error InsufficientBalance(uint256 balance, uint256 needed)",

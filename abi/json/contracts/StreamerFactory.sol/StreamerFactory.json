@@ -5,17 +5,6 @@
         "type": "error"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "newContract",
-                "type": "address"
-            }
-        ],
-        "name": "ContractIsAlreadyDeployedException",
-        "type": "error"
-    },
-    {
         "inputs": [],
         "name": "Create2EmptyBytecode",
         "type": "error"
