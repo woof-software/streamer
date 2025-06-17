@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 enum StreamState {
     NOT_INITIALIZED,
     ONGOING,
@@ -40,6 +42,10 @@ interface IStreamer {
     function claim() external;
 
     function sweepRemaining() external;
+
+    function terminateStream(uint256 _terminationTimestamp) external;
+
+    function rescueToken(IERC20 token) external;
 
     function getNativeAssetAmountOwed() external view returns (uint256);
 
