@@ -28,8 +28,12 @@ contract Streamer is IStreamer {
     uint256 public constant SLIPPAGE_SCALE = 1e8;
     /// @notice Minimal required duration for all duration parameters.
     uint256 public constant MIN_DURATION = 1 days;
+    /// @notice Scale factor for price calculations.
+    uint256 public constant SCALE_FACTOR = 1e18;
     /// @notice Minimal number of decimals allowed for tokens and price feeds.
     uint8 public constant MIN_DECIMALS = 6;
+    /// @notice Number of decimals used to scale prices.
+    uint8 public constant SCALE_DECIMALS = 18;
 
     /// @notice The address of asset used for distribution.
     IERC20 public immutable streamingAsset;
@@ -287,20 +291,19 @@ contract Streamer is IStreamer {
         uint256 streamingAssetPriceScaled = (scaleAmount(
             uint256(streamingAssetPrice),
             streamingAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         ) * (SLIPPAGE_SCALE - slippage)) / SLIPPAGE_SCALE;
         // Scale native asset price to streaming asset decimals for calculations
         uint256 nativeAssetPriceScaled = scaleAmount(
             uint256(nativeAssetPrice),
             nativeAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         );
 
-        uint256 nativeAssetAmountInUSD = (scaleAmount(nativeAssetAmount, nativeAssetDecimals, streamingAssetDecimals) *
-            nativeAssetPriceScaled) / 10 ** streamingAssetDecimals;
-        uint256 amountinStreamingAsset = (nativeAssetAmountInUSD * 10 ** streamingAssetDecimals) /
-            streamingAssetPriceScaled;
-        return amountinStreamingAsset;
+        uint256 nativeAssetAmountInUSD = (scaleAmount(nativeAssetAmount, nativeAssetDecimals, SCALE_DECIMALS) *
+            nativeAssetPriceScaled) / SCALE_FACTOR;
+        uint256 amountInStreamingAsset = (nativeAssetAmountInUSD * SCALE_FACTOR) / streamingAssetPriceScaled;
+        return scaleAmount(amountInStreamingAsset, SCALE_DECIMALS, streamingAssetDecimals);
     }
 
     /** @notice Calculates the amount of Native asset based on the specified Streaming asset amount.
@@ -321,19 +324,19 @@ contract Streamer is IStreamer {
         uint256 streamingAssetPriceScaled = (scaleAmount(
             uint256(streamingAssetPrice),
             streamingAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         ) * (SLIPPAGE_SCALE - slippage)) / SLIPPAGE_SCALE;
         // Scale native asset price to streaming asset decimals for calculations
         uint256 nativeAssetPriceScaled = scaleAmount(
             uint256(nativeAssetPrice),
             nativeAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         );
 
-        uint256 streamingAssetAmountInUSD = (streamingAssetAmount * streamingAssetPriceScaled) /
-            10 ** streamingAssetDecimals;
-        uint256 amountInNativeAsset = (streamingAssetAmountInUSD * 10 ** nativeAssetDecimals) / nativeAssetPriceScaled;
-        return amountInNativeAsset;
+        uint256 streamingAssetAmountInUSD = (scaleAmount(streamingAssetAmount, streamingAssetDecimals, SCALE_DECIMALS) *
+            streamingAssetPriceScaled) / SCALE_FACTOR;
+        uint256 amountInNativeAsset = (streamingAssetAmountInUSD * SCALE_FACTOR) / nativeAssetPriceScaled;
+        return scaleAmount(amountInNativeAsset, SCALE_DECIMALS, nativeAssetDecimals);
     }
 
     /// @dev Returns a correct of the stream once the stream is initialized.
@@ -356,10 +359,10 @@ contract Streamer is IStreamer {
      * @return The scaled amount.
      */
     function scaleAmount(uint256 amount, uint256 fromDecimals, uint256 toDecimals) internal pure returns (uint256) {
+        if (fromDecimals == toDecimals) return amount;
         if (fromDecimals > toDecimals) {
             return amount / (10 ** (fromDecimals - toDecimals));
-        } else {
-            return amount * (10 ** (toDecimals - fromDecimals));
         }
+        return amount * (10 ** (toDecimals - fromDecimals));
     }
 }
