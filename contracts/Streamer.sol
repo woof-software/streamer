@@ -73,7 +73,7 @@ contract Streamer is IStreamer {
     /// @notice Total amount of claimed Streaming asset.
     uint256 public streamingAssetClaimedAmount;
     /// @notice The state which indicated if the stream is not initialized, ongoing or terminated.
-    StreamState public state;
+    StreamState private state;
 
     modifier onlyStreamCreator() {
         if (msg.sender != streamCreator) revert NotStreamCreator();
@@ -81,7 +81,7 @@ contract Streamer is IStreamer {
     }
 
     /// @dev Decimals for tokens and price feeds should be between 6 and 18 to ensure proper calculations.
-    /// @dev
+    /// @dev Streaming asset should not be a token with multiple addresses to ensure the correct flow of the stream.
     /// USD value of `_nativeAssetStreamingAmount` must be equal to at least $1.
     constructor(
         IERC20 _streamingAsset,
@@ -147,12 +147,11 @@ contract Streamer is IStreamer {
      * The extra amount depends on the volatility of assets. In general, we recommend sending extra 10% of the necessary Streaming asset amount.
      * @dev Use the function `calculateStreamingAssetAmount` to determine the amount of Streaming asset to transfer.
      */
-    function initialize() external {
+    function initialize() external onlyStreamCreator {
         if (state != StreamState.NOT_INITIALIZED) revert AlreadyInitialized();
-        if (msg.sender != streamCreator) revert NotStreamCreator();
         startTimestamp = block.timestamp;
         lastClaimTimestamp = block.timestamp;
-        state = StreamState.ONGOING;
+        state = StreamState.SHORTENED;
 
         uint256 balance = streamingAsset.balanceOf(address(this));
         if (calculateNativeAssetAmount(balance) < nativeAssetStreamingAmount)
@@ -196,7 +195,7 @@ contract Streamer is IStreamer {
     /// @param _terminationTimestamp The timestamp after which the stream is stopped. Must be longer than `block.timestamp + minimumNoticePeriod` and less than the end of stream.
     /// If the parameter is equal to 0, the termination timestamp will be set as `block.timestamp + minimumNoticePeriod`.
     function terminateStream(uint256 _terminationTimestamp) external onlyStreamCreator {
-        if (state == StreamState.TERMINATED) revert AlreadyTerminated();
+        if (state == StreamState.SHORTENED) revert AlreadyTerminated();
         if (_terminationTimestamp == 0) {
             terminationTimestamp = block.timestamp + minimumNoticePeriod;
         } else {
@@ -206,7 +205,7 @@ contract Streamer is IStreamer {
 
         if (terminationTimestamp > startTimestamp + streamDuration)
             revert TerminationIsAfterStream(_terminationTimestamp);
-        state = StreamState.TERMINATED;
+        state = StreamState.SHORTENED;
         emit Terminated(terminationTimestamp);
     }
 
@@ -221,9 +220,7 @@ contract Streamer is IStreamer {
                 revert NotStreamCreator();
             }
         } else {
-            uint256 streamEnd = (state == StreamState.TERMINATED)
-                ? terminationTimestamp
-                : startTimestamp + streamDuration;
+            uint256 streamEnd = getStreamEnd();
 
             if (msg.sender == streamCreator) {
                 if (block.timestamp <= streamEnd) {
@@ -256,7 +253,7 @@ contract Streamer is IStreamer {
         if (nativeAssetSuppliedAmount >= nativeAssetStreamingAmount) {
             return 0;
         }
-        uint256 streamEnd = state == StreamState.TERMINATED ? terminationTimestamp : startTimestamp + streamDuration;
+        uint256 streamEnd = getStreamEnd();
         uint256 totalOwed;
 
         if (block.timestamp < streamEnd) {
@@ -264,7 +261,7 @@ contract Streamer is IStreamer {
             totalOwed = (nativeAssetStreamingAmount * elapsed) / streamDuration;
         } else {
             // If Stream is terminated, calculate amount accrued before termination timestamp
-            if (state == StreamState.TERMINATED)
+            if (state == StreamState.SHORTENED)
                 totalOwed = (nativeAssetStreamingAmount * (streamEnd - startTimestamp)) / streamDuration;
             else totalOwed = nativeAssetStreamingAmount;
         }
@@ -334,6 +331,19 @@ contract Streamer is IStreamer {
             10 ** streamingAssetDecimals;
         uint256 amountInNativeAsset = (streamingAssetAmountInUSD * 10 ** nativeAssetDecimals) / nativeAssetPriceScaled;
         return amountInNativeAsset;
+    }
+
+    /// @dev Returns a correct of the stream once the stream is initialized.
+    /// @return Timestamp representing the end of the stream.
+    function getStreamEnd() public view returns (uint256) {
+        if (state == StreamState.NOT_INITIALIZED) return 0;
+        return (state == StreamState.SHORTENED) ? terminationTimestamp : startTimestamp + streamDuration;
+    }
+
+    /// @return Current state of the stream.
+    function getStreamState() external view returns (StreamState) {
+        uint256 streamEnd = getStreamEnd();
+        return block.timestamp < streamEnd ? state : StreamState.FINISHED;
     }
 
     /** @notice Scales an amount from one decimal representation to another.

@@ -5,8 +5,9 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 enum StreamState {
     NOT_INITIALIZED,
-    ONGOING,
-    TERMINATED
+    STARTED,
+    SHORTENED,
+    FINISHED
 }
 
 interface IStreamer {
