@@ -299,10 +299,9 @@ contract Streamer is IStreamer {
             nativeAssetOracleDecimals,
             SCALE_DECIMALS
         );
+        uint256 amountInStreamingAsset = (scaleAmount(nativeAssetAmount, nativeAssetDecimals, SCALE_DECIMALS) *
+            nativeAssetPriceScaled) / streamingAssetPriceScaled;
 
-        uint256 nativeAssetAmountInUSD = (scaleAmount(nativeAssetAmount, nativeAssetDecimals, SCALE_DECIMALS) *
-            nativeAssetPriceScaled) / SCALE_FACTOR;
-        uint256 amountInStreamingAsset = (nativeAssetAmountInUSD * SCALE_FACTOR) / streamingAssetPriceScaled;
         return scaleAmount(amountInStreamingAsset, SCALE_DECIMALS, streamingAssetDecimals);
     }
 
@@ -332,10 +331,9 @@ contract Streamer is IStreamer {
             nativeAssetOracleDecimals,
             SCALE_DECIMALS
         );
+        uint256 amountInNativeAsset = (scaleAmount(streamingAssetAmount, streamingAssetDecimals, SCALE_DECIMALS) *
+            streamingAssetPriceScaled) / nativeAssetPriceScaled;
 
-        uint256 streamingAssetAmountInUSD = (scaleAmount(streamingAssetAmount, streamingAssetDecimals, SCALE_DECIMALS) *
-            streamingAssetPriceScaled) / SCALE_FACTOR;
-        uint256 amountInNativeAsset = (streamingAssetAmountInUSD * SCALE_FACTOR) / nativeAssetPriceScaled;
         return scaleAmount(amountInNativeAsset, SCALE_DECIMALS, nativeAssetDecimals);
     }
 
