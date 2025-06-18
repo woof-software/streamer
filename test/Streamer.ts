@@ -831,4 +831,9 @@ describe("Streamer", function () {
         expect(await streamer.getStreamEnd()).to.equal(0);
         expect(await streamer.getNativeAssetAmountOwed()).to.equal(0);
     });
+
+    it("Should return stream state not initialized before initialization", async () => {
+        const { streamer } = await deployStreamer();
+        expect(await streamer.getStreamState()).to.equal(StreamState.NOT_INITIALIZED);
+    });
 });
