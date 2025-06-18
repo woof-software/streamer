@@ -4,6 +4,6 @@
     "error FailedDeployment()",
     "error InsufficientBalance(uint256,uint256)",
     "event StreamerDeployed(address,bytes)",
-    "function counter() view returns (uint256)",
+    "function counters(address) view returns (uint256)",
     "function deployStreamer(address,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256) returns (address)"
 ]

@@ -4,6 +4,6 @@
     "error FailedDeployment()",
     "error InsufficientBalance(uint256 balance, uint256 needed)",
     "event StreamerDeployed(address newContract, bytes constructorParams)",
-    "function counter() view returns (uint256)",
+    "function counters(address) view returns (uint256)",
     "function deployStreamer(address _streamingAsset, address _nativeAsset, address _streamingAssetOracle, address _nativeAssetOracle, address _returnAddress, address _streamCreator, address _recipient, uint256 _nativeAssetStreamingAmount, uint256 _slippage, uint256 _claimCooldown, uint256 _sweepCooldown, uint256 _streamDuration, uint256 _minimumNoticePeriod) returns (address)"
 ]
