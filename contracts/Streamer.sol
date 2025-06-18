@@ -49,7 +49,7 @@ contract Streamer is IStreamer {
     address public immutable recipient;
     /// @notice Amount of asset to be distributed. Specified in the Native asset units.
     uint256 public immutable nativeAssetStreamingAmount;
-    /// @notice A percentage used to reduce the the price of streaming asset to account for price fluctuations.
+    /// @notice A percentage used to reduce the price of streaming asset to account for price fluctuations.
     uint256 public immutable slippage;
     /// @notice A period of time since last claim timestamp after which anyone can call claim.
     uint256 public immutable claimCooldown;
@@ -339,7 +339,7 @@ contract Streamer is IStreamer {
         return scaleAmount(amountInNativeAsset, SCALE_DECIMALS, nativeAssetDecimals);
     }
 
-    /// @dev Returns a correct of the stream once the stream is initialized.
+    /// @dev Returns a correct end of the stream once the stream is initialized.
     /// @return Timestamp representing the end of the stream.
     function getStreamEnd() public view returns (uint256) {
         if (state == StreamState.NOT_INITIALIZED) return 0;
