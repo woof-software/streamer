@@ -15,8 +15,8 @@ import { Streamer } from "./Streamer.sol";
  * Anyone can use this Smart contract to deploy new streamers.
  */
 contract StreamerFactory is IStreamerFactory {
-    /// @notice A number used to generate a unique salt for Create2.
-    uint256 public counter;
+    /// @notice A number pe deployer used to generate a unique salt for Create2.
+    mapping(address => uint256) public counters;
 
     /// @notice Deploys a new Streamer instance.
     /// @dev For details of each parameter, check documentation for Streamer.
@@ -56,7 +56,7 @@ contract StreamerFactory is IStreamerFactory {
             _streamDuration,
             _minimumNoticePeriod
         );
-        bytes32 uniqueSalt = keccak256(abi.encode(msg.sender, counter++));
+        bytes32 uniqueSalt = keccak256(abi.encode(msg.sender, counters[msg.sender]++));
         bytes memory bytecodeWithParams = abi.encodePacked(type(Streamer).creationCode, constructorParams);
         address newContract = Create2.deploy(0, uniqueSalt, bytecodeWithParams);
 
