@@ -349,6 +349,7 @@ contract Streamer is IStreamer {
     /// @return Current state of the stream.
     function getStreamState() external view returns (StreamState) {
         uint256 streamEnd = getStreamEnd();
+        if (streamEnd == 0) return StreamState.NOT_INITIALIZED;
         return block.timestamp < streamEnd ? state : StreamState.FINISHED;
     }
 
