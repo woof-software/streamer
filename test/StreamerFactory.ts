@@ -66,7 +66,7 @@ describe("StreamerFactory", function () {
 
         const streamer = await ethers.getContractAt("Streamer", streamerAddress);
         expect(await streamer.streamCreator()).to.equal(streamCreator);
-        expect(await factory.counter()).to.equal(1);
+        expect(await factory.counters(streamCreator)).to.equal(1);
     });
 
     it("Should revert if streaming and native assets are the same", async () => {
