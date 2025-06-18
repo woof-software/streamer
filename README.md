@@ -16,9 +16,9 @@ Key features:
 
 This contract is typically used for scheduled payments or vesting mechanisms with off-chain enforcement and real-time pricing.
 
-[StreamerFactory.sol](./contracts/StreamerFactory.sol) - The Streamer Factory is a smart contract that enables the deployment of new Streamer instances using CREATE2 and public counter for salt generation. It supports customizable parameters for each deployment, including the streaming and native assets, price oracles, slippage tolerance, cooldown periods, and stream duration. The Factory ensures a safe and flexible way for users to deploy tailored Streamer contracts with full control over configuration.
+[StreamerFactory.sol](./contracts/StreamerFactory.sol) - The Streamer Factory is a smart contract that enables the deployment of new Streamer instances using CREATE2 allowing for deterministic and predictable contract addresses. The contract utilizes a unique counter per deployer for a unique salt generation. It supports customizable parameters for each deployment, including the streaming and native assets, price oracles, slippage tolerance, cooldown periods, and stream duration. The Factory ensures a safe and flexible way for users to deploy tailored Streamer contracts with full control over configuration.
 **⚠️ Warning**
-Never send tokens to the address of the streamer, precomputed before the actual deployment. Use only the address returned by the function `deployStreamer` or from the event `StreamerDeployed`. Due to the usage of common counter for salt generation, precomputed and actual addresses might differ.
+Be carefully when submitting multiple deployment transactions as the deployed addresses might differ from precomputed in case they are executed out of order.
 
 Read more on [Compound Forum](https://www.comp.xyz/t/compound-streamer-universal-asset-streaming-infrastructure/6861)
 
