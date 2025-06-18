@@ -5,13 +5,13 @@
 A Factory smart contract used for a safe deployment of new Streamer instances.
 Anyone can use this Smart contract to deploy new streamers.
 
-### counter
+### counters
 
 ```solidity
-uint256 counter
+mapping(address => uint256) counters
 ```
 
-A number used to generate a unique salt for Create2.
+A number pe deployer used to generate a unique salt for Create2.
 
 ### deployStreamer
 
