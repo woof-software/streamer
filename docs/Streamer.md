@@ -115,7 +115,7 @@ Amount of asset to be distributed. Specified in the Native asset units.
 uint256 slippage
 ```
 
-A percentage used to reduce the the price of streaming asset to account for price fluctuations.
+A percentage used to reduce the price of streaming asset to account for price fluctuations.
 
 ### claimCooldown
 
@@ -372,7 +372,7 @@ Used in `claim` to calculate how much the remaining balance of Streaming asset i
 function getStreamEnd() public view returns (uint256)
 ```
 
-_Returns a correct of the stream once the stream is initialized._
+_Returns a correct end of the stream once the stream is initialized._
 
 #### Return Values
 
