@@ -28,8 +28,6 @@ contract Streamer is IStreamer {
     uint256 public constant SLIPPAGE_SCALE = 1e8;
     /// @notice Minimal required duration for all duration parameters.
     uint256 public constant MIN_DURATION = 1 days;
-    /// @notice Scale factor for price calculations.
-    uint256 public constant SCALE_FACTOR = 1e18;
     /// @notice Minimal number of decimals allowed for tokens and price feeds.
     uint8 public constant MIN_DECIMALS = 6;
     /// @notice Number of decimals used to scale prices.

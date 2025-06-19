@@ -15,7 +15,7 @@ import { Streamer } from "./Streamer.sol";
  * Anyone can use this Smart contract to deploy new streamers.
  */
 contract StreamerFactory is IStreamerFactory {
-    /// @notice A number pe deployer used to generate a unique salt for Create2.
+    /// @notice A number per deployer used to generate a unique salt for Create2.
     mapping(address => uint256) public counters;
 
     /// @notice Deploys a new Streamer instance.
