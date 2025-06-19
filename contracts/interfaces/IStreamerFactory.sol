@@ -6,7 +6,6 @@ import { AggregatorV3Interface } from "./AggregatorV3Interface.sol";
 interface IStreamerFactory {
     event StreamerDeployed(address newContract, bytes constructorParams);
 
-    error ContractIsAlreadyDeployedException(address newContract);
     error AssetsMatch();
 
     function deployStreamer(
@@ -19,7 +18,7 @@ interface IStreamerFactory {
         address _recipient,
         uint256 _nativeAssetStreamingAmount,
         uint256 _slippage,
-        uint256 _claimCooldown,
+        uint256 _sweepCooldown,
         uint256 _finishCooldown,
         uint256 _streamDuration,
         uint256 _minimumNoticePeriod

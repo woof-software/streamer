@@ -6,8 +6,9 @@ import { IComptrollerV2, IERC20, Streamer } from "../typechain-types";
 
 const StreamState = {
     NOT_INITIALIZED: 0,
-    ONGOING: 1,
-    TERMINATED: 2
+    STARTED: 1,
+    SHORTENED: 2,
+    FINISHED: 3
 } as const;
 const DUST = 30;
 const SLIPPAGE_SCALE = 1e8;
@@ -109,7 +110,7 @@ describe("Streamer", function () {
         expect(await streamer.nativeAssetDecimals()).to.equal(6); // USDC has 6 decimals
         expect(await streamer.streamingAssetOracleDecimals()).to.equal(8); // Chainlink oracle price feeds by default have 8 decimals
         expect(await streamer.nativeAssetOracleDecimals()).to.equal(8); // Chainlink oracle price feeds by default have 8 decimals
-        expect(await streamer.state()).to.equal(StreamState.ONGOING);
+        expect(await streamer.getStreamState()).to.equal(StreamState.STARTED);
     });
 
     it("Should not initialize with not enough supply", async () => {
@@ -602,6 +603,7 @@ describe("Streamer", function () {
         const remainingBalance = await COMP.balanceOf(streamer);
         expect(remainingBalance).to.be.greaterThan(0);
         await time.increase(sweepCooldown);
+        expect(await streamer.getStreamState()).to.equal(StreamState.FINISHED);
         const tx = streamer.connect(signers[0]).sweepRemaining();
         await expect(tx).changeTokenBalances(COMP, [streamer, returnAddress], [-remainingBalance, remainingBalance]);
     });
@@ -646,7 +648,7 @@ describe("Streamer", function () {
         // Terminate the stream
         await streamer.connect(timelockSigner).terminateStream(0);
         expect(await streamer.terminationTimestamp()).to.equal((await time.latest()) + minimumNoticePeriod);
-        expect(await streamer.state()).to.equal(StreamState.TERMINATED);
+        expect(await streamer.getStreamState()).to.equal(StreamState.SHORTENED);
         const expectedWholeAmount = await getExpectedAmount(streamer, Number(await streamer.terminationTimestamp()));
         let expectedAmount = await getExpectedAmount(streamer, (await time.latest()) + 1);
         // Claim after termination
@@ -684,7 +686,7 @@ describe("Streamer", function () {
         const newTerminationTimestamp = (await time.latest()) + time.duration.days(60);
         await streamer.connect(timelockSigner).terminateStream(newTerminationTimestamp);
         expect(await streamer.terminationTimestamp()).to.equal(newTerminationTimestamp);
-        expect(await streamer.state()).to.equal(StreamState.TERMINATED);
+        expect(await streamer.getStreamState()).to.equal(StreamState.SHORTENED);
         const expectedWholeAmount = await getExpectedAmount(streamer, Number(await streamer.terminationTimestamp()));
         let expectedAmount = await getExpectedAmount(streamer, (await time.latest()) + 1);
         // Claim after termination
@@ -822,5 +824,16 @@ describe("Streamer", function () {
             streamer,
             "TerminationIsAfterStream"
         );
+    });
+
+    it("Should return 0 amount owed before initialization", async () => {
+        const { streamer } = await deployStreamer();
+        expect(await streamer.getStreamEnd()).to.equal(0);
+        expect(await streamer.getNativeAssetAmountOwed()).to.equal(0);
+    });
+
+    it("Should return stream state not initialized before initialization", async () => {
+        const { streamer } = await deployStreamer();
+        expect(await streamer.getStreamState()).to.equal(StreamState.NOT_INITIALIZED);
     });
 });

@@ -5,13 +5,13 @@
 A Factory smart contract used for a safe deployment of new Streamer instances.
 Anyone can use this Smart contract to deploy new streamers.
 
-### counter
+### counters
 
 ```solidity
-uint256 counter
+mapping(address => uint256) counters
 ```
 
-A number used to generate a unique salt for Create2.
+A number per deployer used to generate a unique salt for Create2.
 
 ### deployStreamer
 
@@ -21,7 +21,8 @@ function deployStreamer(address _streamingAsset, address _nativeAsset, contract 
 
 Deploys a new Streamer instance.
 
-_For details of each parameter, check documentation for Streamer._
+_For details of each parameter, check documentation for Streamer.
+Do not send tokens to Streamer address precomputed before actual deployment. Use the address returned from the function._
 
 #### Return Values
 

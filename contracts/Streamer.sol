@@ -9,6 +9,7 @@ import { StreamState, IStreamer } from "./interfaces/IStreamer.sol";
 
 /** @title Streamer
  * @author WOOF! Software
+ * @custom:security-contact dmitriy@woof.software
  * @notice This contract streams a certain amount of native asset in a form of streaming asset to the recipient over a specified streaming duration.
  * - The contract is designed to work with a pair of Chainlink oracles: Native Asset / USD and Streaming Asset / USD. However, can support any oracle which supports AggregatorV3Interface.
  * - Streaming asset is accrued linearly over a streaming duration, unlocking a portion of Streaming asset each second. Recipient can claim any time during and after the stream.
@@ -29,6 +30,8 @@ contract Streamer is IStreamer {
     uint256 public constant MIN_DURATION = 1 days;
     /// @notice Minimal number of decimals allowed for tokens and price feeds.
     uint8 public constant MIN_DECIMALS = 6;
+    /// @notice Number of decimals used to scale prices.
+    uint8 public constant SCALE_DECIMALS = 18;
 
     /// @notice The address of asset used for distribution.
     IERC20 public immutable streamingAsset;
@@ -44,7 +47,7 @@ contract Streamer is IStreamer {
     address public immutable recipient;
     /// @notice Amount of asset to be distributed. Specified in the Native asset units.
     uint256 public immutable nativeAssetStreamingAmount;
-    /// @notice A flat percentage added to the price of the Streaming asset during calculation.
+    /// @notice A percentage used to reduce the price of streaming asset to account for price fluctuations.
     uint256 public immutable slippage;
     /// @notice A period of time since last claim timestamp after which anyone can call claim.
     uint256 public immutable claimCooldown;
@@ -73,7 +76,7 @@ contract Streamer is IStreamer {
     /// @notice Total amount of claimed Streaming asset.
     uint256 public streamingAssetClaimedAmount;
     /// @notice The state which indicated if the stream is not initialized, ongoing or terminated.
-    StreamState public state;
+    StreamState private state;
 
     modifier onlyStreamCreator() {
         if (msg.sender != streamCreator) revert NotStreamCreator();
@@ -81,6 +84,7 @@ contract Streamer is IStreamer {
     }
 
     /// @dev Decimals for tokens and price feeds should be between 6 and 18 to ensure proper calculations.
+    /// @dev Streaming asset should not be a token with multiple addresses to ensure the correct flow of the stream.
     /// USD value of `_nativeAssetStreamingAmount` must be equal to at least $1.
     constructor(
         IERC20 _streamingAsset,
@@ -146,12 +150,11 @@ contract Streamer is IStreamer {
      * The extra amount depends on the volatility of assets. In general, we recommend sending extra 10% of the necessary Streaming asset amount.
      * @dev Use the function `calculateStreamingAssetAmount` to determine the amount of Streaming asset to transfer.
      */
-    function initialize() external {
+    function initialize() external onlyStreamCreator {
         if (state != StreamState.NOT_INITIALIZED) revert AlreadyInitialized();
-        if (msg.sender != streamCreator) revert NotStreamCreator();
         startTimestamp = block.timestamp;
         lastClaimTimestamp = block.timestamp;
-        state = StreamState.ONGOING;
+        state = StreamState.STARTED;
 
         uint256 balance = streamingAsset.balanceOf(address(this));
         if (calculateNativeAssetAmount(balance) < nativeAssetStreamingAmount)
@@ -178,6 +181,7 @@ contract Streamer is IStreamer {
 
         uint256 balance = streamingAsset.balanceOf(address(this));
         if (balance < streamingAssetAmount) {
+            emit InsufficientAssetBalance(streamingAssetAmount, balance);
             streamingAssetAmount = balance;
             owed = calculateNativeAssetAmount(balance);
         }
@@ -194,7 +198,7 @@ contract Streamer is IStreamer {
     /// @param _terminationTimestamp The timestamp after which the stream is stopped. Must be longer than `block.timestamp + minimumNoticePeriod` and less than the end of stream.
     /// If the parameter is equal to 0, the termination timestamp will be set as `block.timestamp + minimumNoticePeriod`.
     function terminateStream(uint256 _terminationTimestamp) external onlyStreamCreator {
-        if (state == StreamState.TERMINATED) revert AlreadyTerminated();
+        if (state == StreamState.SHORTENED) revert AlreadyTerminated();
         if (_terminationTimestamp == 0) {
             terminationTimestamp = block.timestamp + minimumNoticePeriod;
         } else {
@@ -204,7 +208,7 @@ contract Streamer is IStreamer {
 
         if (terminationTimestamp > startTimestamp + streamDuration)
             revert TerminationIsAfterStream(_terminationTimestamp);
-        state = StreamState.TERMINATED;
+        state = StreamState.SHORTENED;
         emit Terminated(terminationTimestamp);
     }
 
@@ -219,9 +223,7 @@ contract Streamer is IStreamer {
                 revert NotStreamCreator();
             }
         } else {
-            uint256 streamEnd = (state == StreamState.TERMINATED)
-                ? terminationTimestamp
-                : startTimestamp + streamDuration;
+            uint256 streamEnd = getStreamEnd();
 
             if (msg.sender == streamCreator) {
                 if (block.timestamp <= streamEnd) {
@@ -254,7 +256,9 @@ contract Streamer is IStreamer {
         if (nativeAssetSuppliedAmount >= nativeAssetStreamingAmount) {
             return 0;
         }
-        uint256 streamEnd = state == StreamState.TERMINATED ? terminationTimestamp : startTimestamp + streamDuration;
+        uint256 streamEnd = getStreamEnd();
+        // Validate if stream is properly initialized
+        if (streamEnd == 0) return 0;
         uint256 totalOwed;
 
         if (block.timestamp < streamEnd) {
@@ -262,7 +266,7 @@ contract Streamer is IStreamer {
             totalOwed = (nativeAssetStreamingAmount * elapsed) / streamDuration;
         } else {
             // If Stream is terminated, calculate amount accrued before termination timestamp
-            if (state == StreamState.TERMINATED)
+            if (state == StreamState.SHORTENED)
                 totalOwed = (nativeAssetStreamingAmount * (streamEnd - startTimestamp)) / streamDuration;
             else totalOwed = nativeAssetStreamingAmount;
         }
@@ -285,20 +289,18 @@ contract Streamer is IStreamer {
         uint256 streamingAssetPriceScaled = (scaleAmount(
             uint256(streamingAssetPrice),
             streamingAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         ) * (SLIPPAGE_SCALE - slippage)) / SLIPPAGE_SCALE;
         // Scale native asset price to streaming asset decimals for calculations
         uint256 nativeAssetPriceScaled = scaleAmount(
             uint256(nativeAssetPrice),
             nativeAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         );
+        uint256 amountInStreamingAsset = (scaleAmount(nativeAssetAmount, nativeAssetDecimals, SCALE_DECIMALS) *
+            nativeAssetPriceScaled) / streamingAssetPriceScaled;
 
-        uint256 nativeAssetAmountInUSD = (scaleAmount(nativeAssetAmount, nativeAssetDecimals, streamingAssetDecimals) *
-            nativeAssetPriceScaled) / 10 ** streamingAssetDecimals;
-        uint256 amountinStreamingAsset = (nativeAssetAmountInUSD * 10 ** streamingAssetDecimals) /
-            streamingAssetPriceScaled;
-        return amountinStreamingAsset;
+        return scaleAmount(amountInStreamingAsset, SCALE_DECIMALS, streamingAssetDecimals);
     }
 
     /** @notice Calculates the amount of Native asset based on the specified Streaming asset amount.
@@ -319,19 +321,32 @@ contract Streamer is IStreamer {
         uint256 streamingAssetPriceScaled = (scaleAmount(
             uint256(streamingAssetPrice),
             streamingAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         ) * (SLIPPAGE_SCALE - slippage)) / SLIPPAGE_SCALE;
         // Scale native asset price to streaming asset decimals for calculations
         uint256 nativeAssetPriceScaled = scaleAmount(
             uint256(nativeAssetPrice),
             nativeAssetOracleDecimals,
-            streamingAssetDecimals
+            SCALE_DECIMALS
         );
+        uint256 amountInNativeAsset = (scaleAmount(streamingAssetAmount, streamingAssetDecimals, SCALE_DECIMALS) *
+            streamingAssetPriceScaled) / nativeAssetPriceScaled;
 
-        uint256 streamingAssetAmountInUSD = (streamingAssetAmount * streamingAssetPriceScaled) /
-            10 ** streamingAssetDecimals;
-        uint256 amountInNativeAsset = (streamingAssetAmountInUSD * 10 ** nativeAssetDecimals) / nativeAssetPriceScaled;
-        return amountInNativeAsset;
+        return scaleAmount(amountInNativeAsset, SCALE_DECIMALS, nativeAssetDecimals);
+    }
+
+    /// @dev Returns a correct end of the stream once the stream is initialized.
+    /// @return Timestamp representing the end of the stream.
+    function getStreamEnd() public view returns (uint256) {
+        if (state == StreamState.NOT_INITIALIZED) return 0;
+        return (state == StreamState.SHORTENED) ? terminationTimestamp : startTimestamp + streamDuration;
+    }
+
+    /// @return Current state of the stream.
+    function getStreamState() external view returns (StreamState) {
+        uint256 streamEnd = getStreamEnd();
+        if (streamEnd == 0) return StreamState.NOT_INITIALIZED;
+        return block.timestamp < streamEnd ? state : StreamState.FINISHED;
     }
 
     /** @notice Scales an amount from one decimal representation to another.
@@ -341,10 +356,10 @@ contract Streamer is IStreamer {
      * @return The scaled amount.
      */
     function scaleAmount(uint256 amount, uint256 fromDecimals, uint256 toDecimals) internal pure returns (uint256) {
+        if (fromDecimals == toDecimals) return amount;
         if (fromDecimals > toDecimals) {
             return amount / (10 ** (fromDecimals - toDecimals));
-        } else {
-            return amount * (10 ** (toDecimals - fromDecimals));
         }
+        return amount * (10 ** (toDecimals - fromDecimals));
     }
 }

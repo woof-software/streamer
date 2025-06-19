@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 enum StreamState {
     NOT_INITIALIZED,
-    ONGOING,
-    TERMINATED
+    STARTED,
+    SHORTENED,
+    FINISHED
 }
 
 interface IStreamer {
@@ -13,6 +16,7 @@ interface IStreamer {
     event Terminated(uint256 terminationTimestamp);
     event Swept(uint256 amount);
     event Rescued(address token, uint256 balance);
+    event InsufficientAssetBalance(uint256 balanceRequired, uint256 balance);
 
     error ZeroAmount();
     error NotReceiver();
@@ -39,6 +43,10 @@ interface IStreamer {
     function claim() external;
 
     function sweepRemaining() external;
+
+    function terminateStream(uint256 _terminationTimestamp) external;
+
+    function rescueToken(IERC20 token) external;
 
     function getNativeAssetAmountOwed() external view returns (uint256);
 

@@ -5,17 +5,6 @@
         "type": "error"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "newContract",
-                "type": "address"
-            }
-        ],
-        "name": "ContractIsAlreadyDeployedException",
-        "type": "error"
-    },
-    {
         "inputs": [],
         "name": "Create2EmptyBytecode",
         "type": "error"
@@ -61,8 +50,14 @@
         "type": "event"
     },
     {
-        "inputs": [],
-        "name": "counter",
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "counters",
         "outputs": [
             {
                 "internalType": "uint256",

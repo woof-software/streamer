@@ -10,15 +10,17 @@ import { Streamer } from "./Streamer.sol";
 
 /** @title Streamer Factory
  * @author WOOF! Software
+ * @custom:security-contact dmitriy@woof.software
  * @notice A Factory smart contract used for a safe deployment of new Streamer instances.
  * Anyone can use this Smart contract to deploy new streamers.
  */
 contract StreamerFactory is IStreamerFactory {
-    /// @notice A number used to generate a unique salt for Create2.
-    uint256 public counter;
+    /// @notice A number per deployer used to generate a unique salt for Create2.
+    mapping(address => uint256) public counters;
 
     /// @notice Deploys a new Streamer instance.
     /// @dev For details of each parameter, check documentation for Streamer.
+    /// @dev Do not send tokens to Streamer address precomputed before actual deployment. Use the address returned from the function.
     /// @return The address of a new Streamer instance.
     function deployStreamer(
         address _streamingAsset,
@@ -54,12 +56,9 @@ contract StreamerFactory is IStreamerFactory {
             _streamDuration,
             _minimumNoticePeriod
         );
-        bytes32 uniqueSalt = keccak256(abi.encode(msg.sender, counter++, constructorParams));
+        bytes32 uniqueSalt = keccak256(abi.encode(msg.sender, counters[msg.sender]++));
         bytes memory bytecodeWithParams = abi.encodePacked(type(Streamer).creationCode, constructorParams);
-        address newContract = Create2.computeAddress(uniqueSalt, keccak256(bytecodeWithParams));
-
-        if (newContract.code.length != 0) revert ContractIsAlreadyDeployedException(newContract);
-        Create2.deploy(0, uniqueSalt, bytecodeWithParams);
+        address newContract = Create2.deploy(0, uniqueSalt, bytecodeWithParams);
 
         emit StreamerDeployed(newContract, constructorParams);
         return newContract;
