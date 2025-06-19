@@ -29,7 +29,6 @@
     "function MIN_DECIMALS() view returns (uint8)",
     "function MIN_DURATION() view returns (uint256)",
     "function SCALE_DECIMALS() view returns (uint8)",
-    "function SCALE_FACTOR() view returns (uint256)",
     "function SLIPPAGE_SCALE() view returns (uint256)",
     "function calculateNativeAssetAmount(uint256) view returns (uint256)",
     "function calculateStreamingAssetAmount(uint256) view returns (uint256)",
