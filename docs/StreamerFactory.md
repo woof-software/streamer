@@ -11,7 +11,7 @@ Anyone can use this Smart contract to deploy new streamers.
 mapping(address => uint256) counters
 ```
 
-A number pe deployer used to generate a unique salt for Create2.
+A number per deployer used to generate a unique salt for Create2.
 
 ### deployStreamer
 

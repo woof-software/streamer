@@ -29,14 +29,6 @@ uint256 MIN_DURATION
 
 Minimal required duration for all duration parameters.
 
-### SCALE_FACTOR
-
-```solidity
-uint256 SCALE_FACTOR
-```
-
-Scale factor for price calculations.
-
 ### MIN_DECIMALS
 
 ```solidity
