@@ -1,6 +1,6 @@
 ![Logo](./logo.png)
 
-# Compound Streamer
+# Streamer
 
 ## TL;DR
 
